@@ -6,14 +6,14 @@ import urllib.parse
 import re
 import sys
 
-api_token = sys.argv[1]
-rss_token = sys.argv[2]
-domain = sys.argv[3]
-deluge_host = sys.argv[4]
-deluge_port = sys.argv[5]
-deluge_username = sys.argv[6]
-deluge_password = sys.argv[7]
-url_stream = sys.argv[8]
+api_token = os.environ.get('Api_token')
+rss_token = os.environ.get('Rss_token')
+domain = os.environ.get('Domain')
+deluge_host = os.environ.get('Deluge_host')
+deluge_port = os.environ.get('Deluge_port')
+deluge_username = os.environ.get('Deluge_username')
+deluge_password = os.environ.get('Deluge_password')
+url_stream = os.environ.get('Url_stream')
 
 
 
