@@ -5,6 +5,7 @@ from deluge_client import DelugeRPCClient
 import urllib.parse
 import re
 import sys
+import os
 
 api_token = os.environ.get('Api_token')
 rss_token = os.environ.get('Rss_token')
