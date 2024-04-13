@@ -7,7 +7,7 @@ import re
 import sys
 import os
 
-domain = os.environ.get('Domain')
+#domain = os.environ.get('Domain')
 
 
 MANIFEST = {
@@ -42,6 +42,7 @@ def addon_manifest(data):
 
 @app.route('/lat/<data>/stream/<type>/<id>.json')
 def addon_stream(data,type, id):
+    domain = request.host
     parts = data.split("|")
     result = {}
     for part in parts:
@@ -65,7 +66,7 @@ def addon_stream(data,type, id):
             size = item['attributes']['size']
             size_formatted = format_size(size)
             title = f"{item['attributes']['name']}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-            stream_info = {'title': title, 'url': f"{domain}/redireccionar/{data}/{item['id']}"}
+            stream_info = {'title': title, 'url': f"https://{domain}/redireccionar/{data}/{item['id']}"}
             streams.append(stream_info)
         return respond_with({'streams': streams})
     elif type == 'series':
@@ -80,13 +81,13 @@ def addon_stream(data,type, id):
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"https://{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
             if f"S{season_number.zfill(2)} " in name:
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"https://{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
 
         return respond_with({'streams': streams})
