@@ -68,7 +68,7 @@ def addon_stream(url_key,type, id):
             size = item['attributes']['size']
             size_formatted = format_size(size)
             title = f"{item['attributes']['name']}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-            stream_info = {'title': title, 'url': f"{domain}/redireccionar/{item['id']}"}
+            stream_info = {'title': title, 'url': f"{domain}/red1/{item['id']}"}
             streams.append(stream_info)
         return respond_with({'streams': streams})
     elif type == 'series':
@@ -83,13 +83,13 @@ def addon_stream(url_key,type, id):
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/rd2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
             if f"S{season_number.zfill(2)} " in name:
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/rd2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
 
         return respond_with({'streams': streams})
@@ -97,14 +97,18 @@ def addon_stream(url_key,type, id):
     else:
         abort(404)
 
-@app.route('/redireccionar/<id>/')
-def redireccionar(id):
+@app.route('/<url_key>/rd1/<id>/')
+def redireccionar(url_key,id):
+    if url_key_v != url_key:
+        abort(404)
     hash = add_torrent(id)
     nueva_url = get_url_stream(hash)
     return redirect(nueva_url, code=301)
 
-@app.route('/redireccionar2/<data>/<season>/<episode>/<id>/')
-def redireccionar2(data,season, episode, id):
+@app.route('/<url_key>/rd2/<season>/<episode>/<id>/')
+def redireccionar2(url_key,season, episode, id):
+    if url_key_v != url_key:
+        abort(404)
     hash = add_torrent(id)
     file_name = get_torrents(hash, episode)
     nueva_url = get_url_stream2(hash, file_name)
