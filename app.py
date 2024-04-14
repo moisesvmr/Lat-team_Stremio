@@ -17,9 +17,6 @@ psclt = os.environ.get('DELUGE_PASSWORD')
 strhost = os.environ.get('STREAM_HOST')
 url_key_v = os.environ.get('URL_KEY')
 
-
-
-
 MANIFEST = {
     'id': 'org.stremio.Lat-Team',
     'version': '1.0.0',
@@ -45,8 +42,7 @@ def format_size(size):
         return f"{round(size / (1024 * 1024 * 1024), 2)} GB"
     else:
         return f"{round(size / (1024 * 1024), 2)} MB"
-    
-#create la ruta para el manifiesto que se encuentra en la raiz de la app y use la url_key para protegerla
+
 @app.route('/<url_key>/manifest.json')
 def addon_manifest(url_key):
     if url_key_v != url_key:
@@ -68,7 +64,7 @@ def addon_stream(url_key,type, id):
             size = item['attributes']['size']
             size_formatted = format_size(size)
             title = f"{item['attributes']['name']}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-            stream_info = {'title': title, 'url': f"{domain}/red1/{item['id']}"}
+            stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd1/{item['id']}"}
             streams.append(stream_info)
         return respond_with({'streams': streams})
     elif type == 'series':
