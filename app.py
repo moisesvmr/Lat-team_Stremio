@@ -83,13 +83,13 @@ def addon_stream(url_key,type, id):
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/rd2/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
             if f"S{season_number.zfill(2)} " in name:
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/rd2/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
 
         return respond_with({'streams': streams})
