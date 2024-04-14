@@ -7,7 +7,17 @@ import re
 import sys
 import os
 
-domain = os.environ.get('Domain')
+domain = os.environ.get('DOMAIN')
+trk = os.environ.get('API_TOKEN')
+rss = os.environ.get('RSS_TOKEN')
+hclt = os.environ.get('DELUGE_HOST')
+pclt = os.environ.get('DELUGE_PORT')
+uclt = os.environ.get('DELUGE_USER')
+psclt = os.environ.get('DELUGE_PASSWORD')
+strhost = os.environ.get('STREAM_HOST')
+url_key_v = os.environ.get('URL_KEY')
+
+
 
 
 MANIFEST = {
@@ -35,43 +45,36 @@ def format_size(size):
         return f"{round(size / (1024 * 1024 * 1024), 2)} GB"
     else:
         return f"{round(size / (1024 * 1024), 2)} MB"
-
-@app.route('/lat/<data>/manifest.json')
-def addon_manifest(data):
+    
+#create la ruta para el manifiesto que se encuentra en la raiz de la app y use la url_key para protegerla
+@app.route('/<url_key>/manifest.json')
+def addon_manifest(url_key):
+    if url_key_v != url_key:
+        abort(404)
     return respond_with(MANIFEST)
 
-@app.route('/lat/<data>/stream/<type>/<id>.json')
-def addon_stream(data,type, id):
-    parts = data.split("|")
-    result = {}
-    for part in parts:
-        if "=" in part:
-            key, value = part.split("=")
-            result[key] = value
-        else:
-            print(f"Error: No se encontró '=' en la parte")
-
-    if "trk" not in result or "rss" not in result or "hclt" not in result or "pclt" not in result or "uclt" not in result or "strhost" not in result or "strport" not in result or "ssl" not in result:
+@app.route('/<url_key>/stream/<type>/<id>.json')
+def addon_stream(url_key,type, id):
+    if url_key_v != url_key:
         abort(404)
-
     if type not in MANIFEST['types']:
         abort(404)
     id = id.replace('tt', '')
     if type == 'movie':
-        response = requests.get(f"https://lat-team.com/api/torrents/filter?imdbId={id}&api_token={result['trk']}")
+        response = requests.get(f"https://lat-team.com/api/torrents/filter?imdbId={id}&alive=True&api_token={trk}")
         lat_team = response.json()
         streams = []
         for item in lat_team['data']:
             size = item['attributes']['size']
             size_formatted = format_size(size)
             title = f"{item['attributes']['name']}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-            stream_info = {'title': title, 'url': f"{domain}/redireccionar/{data}/{item['id']}"}
+            stream_info = {'title': title, 'url': f"{domain}/redireccionar/{item['id']}"}
             streams.append(stream_info)
         return respond_with({'streams': streams})
     elif type == 'series':
         id_parts = id.split(":")
         season_number, episode_number = id_parts[1], id_parts[2]
-        response = requests.get(f"https://lat-team.com/api/torrents/filter?imdbId={id_parts[0]}&api_token={result['trk']}")
+        response = requests.get(f"https://lat-team.com/api/torrents/filter?imdbId={id_parts[0]}&alive=True&api_token={trk}")
         lat_team = response.json()
         streams = []
         for item in lat_team['data']:
@@ -80,13 +83,13 @@ def addon_stream(data,type, id):
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
             if f"S{season_number.zfill(2)} " in name:
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{data}/{season_number}/{episode_number}/{item['id']}"}
+                stream_info = {'title': title, 'url': f"{domain}/redireccionar2/{season_number}/{episode_number}/{item['id']}"}
                 streams.append(stream_info)
 
         return respond_with({'streams': streams})
@@ -94,45 +97,25 @@ def addon_stream(data,type, id):
     else:
         abort(404)
 
-@app.route('/redireccionar/<data>/<id>/')
-def redireccionar(data,id):
-    parts = data.split("|")
-    result = {}
-    for part in parts:
-        if "=" in part:
-            key, value = part.split("=")
-            result[key] = value
-        else:
-            print(f"Error: No se encontró '=' en la parte")
-    if "trk" not in result or "rss" not in result or "hclt" not in result or "pclt" not in result or "uclt" not in result or "strhost" not in result or "strport" not in result or "ssl" not in result or "psclt" not in result:
-        abort(404)
-    hash = add_torrent(result,id)
-    nueva_url = get_url_stream(result,hash)
+@app.route('/redireccionar/<id>/')
+def redireccionar(id):
+    hash = add_torrent(id)
+    nueva_url = get_url_stream(hash)
     return redirect(nueva_url, code=301)
 
 @app.route('/redireccionar2/<data>/<season>/<episode>/<id>/')
 def redireccionar2(data,season, episode, id):
-    parts = data.split("|")
-    result = {}
-    for part in parts:
-        if "=" in part:
-            key, value = part.split("=")
-            result[key] = value
-        else:
-            print(f"Error: No se encontró '=' en la parte")
-    if "trk" not in result or "rss" not in result or "hclt" not in result or "pclt" not in result or "uclt" not in result or "strhost" not in result or "strport" not in result or "ssl" not in result or "psclt" not in result:
-        abort(404)
-    hash = add_torrent(result,id)
-    file_name = get_torrents(result,hash, episode)
-    nueva_url = get_url_stream2(result, hash, file_name)
+    hash = add_torrent(id)
+    file_name = get_torrents(hash, episode)
+    nueva_url = get_url_stream2(hash, file_name)
     return redirect(nueva_url, code=301)
 
-def add_torrent(result2,id):
-    deluge_client = DelugeRPCClient(result2["hclt"], int(result2["pclt"]), result2["uclt"], result2["psclt"])
+def add_torrent(id):
+    deluge_client = DelugeRPCClient(hclt, int(pclt), uclt, psclt)
     deluge_client.connect()
     if deluge_client.connected:
         print("Conectado a Deluge RPC")
-    torrent_url = f'https://lat-team.com/torrent/download/{id}.{result2["rss"]}'
+    torrent_url = f'https://lat-team.com/torrent/download/{id}.{rss}'
     try:
         result = deluge_client.core.add_torrent_url(torrent_url, {})
         print(result.decode('utf-8'))
@@ -150,8 +133,8 @@ def add_torrent(result2,id):
     finally:
         deluge_client.disconnect()
 
-def get_torrents(result2,hash, episode):
-    deluge_client = DelugeRPCClient(result2["hclt"], int(result2["pclt"]), result2["uclt"], result2["psclt"])
+def get_torrents(hash, episode):
+    deluge_client = DelugeRPCClient(hclt, int(pclt), uclt, psclt)
     deluge_client.connect()
     if deluge_client.connected:
         print("Conectado a Deluge RPC")
@@ -169,9 +152,8 @@ def get_torrents(result2,hash, episode):
     finally:
         deluge_client.disconnect()
 
-def get_url_stream(result,hash):
-    url = f"{result['ssl']}://stream:{result['strhost']}:{result['strport']}/streaming/stream?infohash={hash}"
-    print(url)
+def get_url_stream(hash):
+    url = f"{strhost}?infohash={hash}"
     try:
         response = requests.request("GET", url, verify=False)
         data = response.json()
@@ -180,9 +162,8 @@ def get_url_stream(result,hash):
         print(e)
         return None
  
-def get_url_stream2(result,hash, name):
-    url = f"{result['ssl']}://stream:{result['strhost']}:{result['strport']}/streaming/stream?infohash={hash}&path={name}"
-    print(url)
+def get_url_stream2(hash, name):
+    url = f"{strhost}?infohash={hash}&path={name}"
     try:
         response = requests.request("GET", url, verify=False)
         data = response.json()
