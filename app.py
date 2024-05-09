@@ -64,7 +64,9 @@ def addon_stream(url_key,type, id):
             size = item['attributes']['size']
             size_formatted = format_size(size)
             title = f"{item['attributes']['name']}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-            stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd1/{item['id']}"}
+            url_f = f"{domain}/{url_key_v}/rd1/{item['id']}"
+            print(url_f)
+            stream_info = {'title': title, 'url': url_f}
             streams.append(stream_info)
         return respond_with({'streams': streams})
     elif type == 'series':
@@ -79,13 +81,17 @@ def addon_stream(url_key,type, id):
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"}
+                url_f = f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"
+                print(url_f)
+                stream_info = {'title': title, 'url': url_f}
                 streams.append(stream_info)
             if f"S{season_number.zfill(2)} " in name:
                 size = item['attributes']['size']
                 size_formatted = format_size(size)
                 title = f"{name}\n{item['attributes']['type']}  {item['attributes']['resolution']}  {size_formatted}\nSeeders: {item['attributes']['seeders']}  /   Leechers: {item['attributes']['leechers']}  / Free: {item['attributes']['freeleech']}"
-                stream_info = {'title': title, 'url': f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"}
+                url_f = f"{domain}/{url_key_v}/rd2/{season_number}/{episode_number}/{item['id']}"
+                print(url_f)
+                stream_info = {'title': title, 'url': url_f}
                 streams.append(stream_info)
 
         return respond_with({'streams': streams})
@@ -99,7 +105,10 @@ def redireccionar(url_key,id):
         abort(404)
     hash = add_torrent(id)
     nueva_url = get_url_stream(hash)
-    return redirect(nueva_url, code=301)
+    print("url a enviar :")
+    print(nueva_url)
+    #return redirect(nueva_url, code=301)
+    return redirect(nueva_url)
 
 @app.route('/<url_key>/rd2/<season>/<episode>/<id>/')
 def redireccionar2(url_key,season, episode, id):
@@ -108,7 +117,10 @@ def redireccionar2(url_key,season, episode, id):
     hash = add_torrent(id)
     file_name = get_torrents(hash, episode)
     nueva_url = get_url_stream2(hash, file_name)
-    return redirect(nueva_url, code=301)
+    print("url a enviar :")
+    print(nueva_url)
+    #return redirect(nueva_url, code=301)
+    return redirect(nueva_url)
 
 def add_torrent(id):
     deluge_client = DelugeRPCClient(hclt, int(pclt), uclt, psclt)
@@ -157,6 +169,8 @@ def get_url_stream(hash):
     try:
         response = requests.request("GET", url, verify=False)
         data = response.json()
+        print("url stream:")
+        print(data["url"])
         return data["url"]
     except Exception as e:
         print(e)
@@ -167,6 +181,8 @@ def get_url_stream2(hash, name):
     try:
         response = requests.request("GET", url, verify=False)
         data = response.json()
+        print("url stream:")
+        print(data["url"])
         return data["url"]
     except Exception as e:
         print(e)
